@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Landing page with click_id capture</title>
+</head>
+<body>
+  <!-- Lead form: the hidden field carries the click_id to your server. -->
+  <form method="post" action="/signup">
+    <input type="email" name="email" required placeholder="you@example.com">
+    <input type="hidden" name="click_id" id="click_id">
+    <button type="submit">Sign up</button>
+  </form>
+
+  <script>
+    // 1. Read ?clickid=... from the URL (use the parameter name from your offer's destination URL).
+    // 2. Keep it in a first-party cookie for 30 days, so it survives page changes.
+    // 3. Copy it into the hidden field of every form on the page.
+    (function () {
+      var PARAM = "clickid";
+      var COOKIE = "rastro_click_id";
+      var DAYS = 30;
+
+      var fromUrl = new URLSearchParams(window.location.search).get(PARAM);
+      if (fromUrl && /^[0-9A-Za-z_-]{10,64}$/.test(fromUrl)) {
+        document.cookie = COOKIE + "=" + encodeURIComponent(fromUrl) +
+          "; Max-Age=" + DAYS * 86400 + "; Path=/; SameSite=Lax" +
+          (location.protocol === "https:" ? "; Secure" : "");
+      }
+
+      var match = document.cookie.match(new RegExp("(?:^|; )" + COOKIE + "=([^;]*)"));
+      var clickId = match ? decodeURIComponent(match[1]) : "";
+      document.querySelectorAll('input[name="click_id"]').forEach(function (input) {
+        input.value = clickId;
+      });
+    })();
+  </script>
+</body>
+</html>
